@@ -22,7 +22,6 @@ class Laravel
 	implements \Aimeos\Base\View\Helper\Url\Iface
 {
 	private \Illuminate\Contracts\Routing\UrlGenerator $builder;
-	private array $fixed;
 
 
 	/**
@@ -32,12 +31,11 @@ class Laravel
 	 * @param \Illuminate\Contracts\Routing\UrlGenerator $builder Laravel URL builder object
 	 * @param array Associative list of fixed parameters that should be available for all routes
 	 */
-	public function __construct( \Aimeos\Base\View\Iface $view, \Illuminate\Contracts\Routing\UrlGenerator $builder, array $fixed )
+	public function __construct( \Aimeos\Base\View\Iface $view, \Illuminate\Contracts\Routing\UrlGenerator $builder, private array $fixed )
 	{
 		parent::__construct( $view );
 
 		$this->builder = $builder;
-		$this->fixed = $fixed;
 	}
 
 
@@ -71,9 +69,9 @@ class Laravel
 	 */
 	protected function getValues( array $config ) : array
 	{
-		$values = array(
+		$values = [
 			'absoluteUri' => false,
-		);
+		];
 
 		if( isset( $config['absoluteUri'] ) ) {
 			$values['absoluteUri'] = (bool) $config['absoluteUri'];

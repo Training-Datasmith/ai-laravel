@@ -23,7 +23,6 @@ class Laravel implements \Aimeos\Base\Mail\Message\Iface
 {
 	private \Symfony\Component\Mime\Email $message;
 	private \Illuminate\Mail\Mailer $mailer;
-	private string $charset;
 
 
 	/**
@@ -33,9 +32,8 @@ class Laravel implements \Aimeos\Base\Mail\Message\Iface
 	 * @param \Symfony\Component\Mime\Email $message Message object
 	 * @param string $charset Default charset of the message
 	 */
-	public function __construct( \Illuminate\Mail\Mailer $mailer, \Symfony\Component\Mime\Email $message, string $charset )
+	public function __construct( \Illuminate\Mail\Mailer $mailer, \Symfony\Component\Mime\Email $message, private string $charset )
 	{
-		$this->charset = $charset;
 		$this->message = $message;
 		$this->mailer = $mailer;
 	}

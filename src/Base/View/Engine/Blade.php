@@ -47,7 +47,7 @@ class Blade implements Iface
 		$factory = $this->factory;
 		$lv = $factory->file( $filename, $values );
 
-		$fcn = function() use ( $factory, $view )
+		$fcn = function() use ( $factory, $view ): void
 		{
 			foreach( $factory->getSections() as $name => $section ) {
 				$view->block()->set( $name, $section );

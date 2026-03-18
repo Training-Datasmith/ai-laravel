@@ -159,7 +159,7 @@ class Laravel
 				'label' => 'Customer has list item, parameter(<domain>[,<list type>[,<reference ID>)]]',
 				'type' => 'null',
 				'public' => false,
-				'function' => function( &$source, array $params ) use ( $level ) {
+				'function' => function( &$source, array $params ) use ( $level ): array {
 					$keys = [];
 
 					foreach( (array) ( $params[1] ?? '' ) as $type ) {
@@ -182,7 +182,7 @@ class Laravel
 				'label' => 'Customer has property item, parameter(<property type>[,<language code>[,<property value>]])',
 				'type' => 'null',
 				'public' => false,
-				'function' => function( &$source, array $params ) use ( $level ) {
+				'function' => function( &$source, array $params ) use ( $level ): array {
 					$keys = [];
 					$langs = array_key_exists( 1, $params ) ? ( $params[1] ?? 'null' ) : '';
 

@@ -19,18 +19,14 @@ namespace Aimeos\Base\Mail\Manager;
  */
 class Laravel implements Iface
 {
-	private ?\Illuminate\Mail\MailManager $manager;
-
-
 	/**
 	 * Initializes the object
 	 *
 	 * @param \Illuminate\Mail\MailManager $manager Mail manager object
 	 */
-	public function __construct( \Illuminate\Mail\MailManager $manager )
-	{
-		$this->manager = $manager;
-	}
+	public function __construct(private ?\Illuminate\Mail\MailManager $manager)
+    {
+    }
 
 
 	/**

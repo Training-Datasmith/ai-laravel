@@ -20,7 +20,6 @@ namespace Aimeos\Base\Filesystem;
 class Laravel implements Iface, DirIface, MetaIface
 {
 	private \Illuminate\Contracts\Filesystem\Filesystem $fs;
-	private string $tempdir;
 
 
 	/**
@@ -29,10 +28,9 @@ class Laravel implements Iface, DirIface, MetaIface
 	 * @param \Illuminate\Contracts\Filesystem\Filesystem $fs Laravel file system object
 	 * @param string $tempdir Directory for storing temporary files
 	 */
-	public function __construct( \Illuminate\Contracts\Filesystem\Filesystem $fs, string $tempdir )
+	public function __construct( \Illuminate\Contracts\Filesystem\Filesystem $fs, private string $tempdir )
 	{
 		$this->fs = $fs;
-		$this->tempdir = $tempdir;
 	}
 
 

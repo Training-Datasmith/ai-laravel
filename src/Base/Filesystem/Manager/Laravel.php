@@ -21,7 +21,6 @@ class Laravel extends Standard implements Iface
 {
 	private \Illuminate\Filesystem\FilesystemManager $fsm;
 	private array $objects = [];
-	private string $tempdir;
 
 
 	/**
@@ -31,12 +30,11 @@ class Laravel extends Standard implements Iface
 	 * @param array $config Filesystem resource configuration
 	 * @param string $tempdir Directory for storing temporary files
 	 */
-	public function __construct( \Illuminate\Filesystem\FilesystemManager $fsm, array $config, string $tempdir )
+	public function __construct( \Illuminate\Filesystem\FilesystemManager $fsm, array $config, private string $tempdir )
 	{
 		parent::__construct( $config );
 
 		$this->fsm = $fsm;
-		$this->tempdir = $tempdir;
 	}
 
 

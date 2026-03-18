@@ -185,15 +185,16 @@ class Laravel
 	 */
 	public function set( string $key, $value, $expires = null, iterable $tags = [] ) : bool
 	{
-		if( $expires instanceof \DateInterval ) {
-			return $this->object->put( $key, $value, (int) ( date_create()->add( $expires )->format( 'Y-m-d H:i:s' ) - time() ) );
-		} elseif( is_string( $expires ) ) {
-			return $this->object->put( $key, $value, (int) ( date_create( $expires )->getTimestamp() - time() ) );
-		} elseif( is_int( $expires ) ) {
-			return $this->object->put( $key, $value, (int) $expires );
-		} else {
-			return $this->object->forever( $key, $value );
-		}
+		if ($expires instanceof \DateInterval) {
+            return $this->object->put( $key, $value, (int) ( date_create()->add( $expires )->format( 'Y-m-d H:i:s' ) - time() ) );
+        }
+        if (is_string( $expires )) {
+            return $this->object->put( $key, $value, (int) ( date_create( $expires )->getTimestamp() - time() ) );
+        }
+        if (is_int( $expires )) {
+            return $this->object->put( $key, $value, $expires );
+        }
+        return $this->object->forever( $key, $value );
 	}
 
 
