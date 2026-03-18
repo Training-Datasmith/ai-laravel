@@ -1,163 +1,153 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2015-2026
  */
 
-
- namespace Aimeos\MShop\Customer\Manager\Lists;
-
+namespace Aimeos\MShop\Customer\Manager\Lists;
 
 class LaravelTest extends \PHPUnit\Framework\TestCase
 {
-	private $object;
-	private $context;
+    private $object;
+    private $context;
 
+    protected function setUp(): void
+    {
+        $this->context = \TestHelper::context();
+        $this->object = new \Aimeos\MShop\Customer\Manager\Lists\Laravel($this->context);
+    }
 
-	protected function setUp() : void
-	{
-		$this->context = \TestHelper::context();
-		$this->object = new \Aimeos\MShop\Customer\Manager\Lists\Laravel( $this->context );
-	}
+    protected function tearDown(): void
+    {
+        unset($this->object, $this->context);
+    }
 
+    public function testClear()
+    {
+        $this->assertInstanceOf(\Aimeos\MShop\Common\Manager\Iface::class, $this->object->clear([ -1 ]));
+    }
 
-	protected function tearDown() : void
-	{
-		unset( $this->object, $this->context );
-	}
+    public function testCreateItem()
+    {
+        $this->assertInstanceOf('\\Aimeos\\MShop\\Common\\Item\\Lists\\Iface', $this->object->create());
+    }
 
+    public function testGetItem()
+    {
+        $search = $this->object->filter()->slice(0, 1);
+        $item = $this->object->search($search)->first(new \RuntimeException('No item found'));
 
-	public function testClear()
-	{
-		$this->assertInstanceOf( \Aimeos\MShop\Common\Manager\Iface::class, $this->object->clear( array( -1 ) ) );
-	}
+        $this->assertEquals($item, $this->object->get($item->getId()));
+    }
 
+    public function testSaveUpdateDeleteItem()
+    {
+        $search = $this->object->filter()->slice(0, 1);
+        $item = $this->object->search($search)->first(new \RuntimeException('No item found'));
 
-	public function testCreateItem()
-	{
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Common\\Item\\Lists\\Iface', $this->object->create() );
-	}
+        $item->setId(null);
+        $item->setDomain('unittest');
+        $resultSaved = $this->object->save($item);
+        $itemSaved = $this->object->get($item->getId());
 
+        $itemExp = clone $itemSaved;
+        $itemExp->setDomain('unittest2');
+        $resultUpd = $this->object->save($itemExp);
+        $itemUpd = $this->object->get($itemExp->getId());
 
-	public function testGetItem()
-	{
-		$search = $this->object->filter()->slice( 0, 1 );
-		$item = $this->object->search( $search )->first( new \RuntimeException( 'No item found' ) );
+        $this->object->delete($itemSaved->getId());
 
-		$this->assertEquals( $item, $this->object->get( $item->getId() ) );
-	}
+        $this->assertTrue($item->getId() !== null);
+        $this->assertEquals($item->getId(), $itemSaved->getId());
+        $this->assertEquals($item->getSiteId(), $itemSaved->getSiteId());
+        $this->assertEquals($item->getParentId(), $itemSaved->getParentId());
+        $this->assertEquals($item->getType(), $itemSaved->getType());
+        $this->assertEquals($item->getRefId(), $itemSaved->getRefId());
+        $this->assertEquals($item->getDomain(), $itemSaved->getDomain());
+        $this->assertEquals($item->getDateStart(), $itemSaved->getDateStart());
+        $this->assertEquals($item->getDateEnd(), $itemSaved->getDateEnd());
+        $this->assertEquals($item->getPosition(), $itemSaved->getPosition());
 
+        $this->assertEquals($this->context->editor(), $itemSaved->editor());
+        $this->assertMatchesRegularExpression('/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $itemSaved->getTimeCreated());
+        $this->assertMatchesRegularExpression('/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $itemSaved->getTimeModified());
 
-	public function testSaveUpdateDeleteItem()
-	{
-		$search = $this->object->filter()->slice( 0, 1 );
-		$item = $this->object->search( $search )->first( new \RuntimeException( 'No item found' ) );
+        $this->assertEquals($itemExp->getId(), $itemUpd->getId());
+        $this->assertEquals($itemExp->getSiteId(), $itemUpd->getSiteId());
+        $this->assertEquals($itemExp->getParentId(), $itemUpd->getParentId());
+        $this->assertEquals($itemExp->getType(), $itemUpd->getType());
+        $this->assertEquals($itemExp->getRefId(), $itemUpd->getRefId());
+        $this->assertEquals($itemExp->getDomain(), $itemUpd->getDomain());
+        $this->assertEquals($itemExp->getDateStart(), $itemUpd->getDateStart());
+        $this->assertEquals($itemExp->getDateEnd(), $itemUpd->getDateEnd());
+        $this->assertEquals($itemExp->getPosition(), $itemUpd->getPosition());
 
-		$item->setId( null );
-		$item->setDomain( 'unittest' );
-		$resultSaved = $this->object->save( $item );
-		$itemSaved = $this->object->get( $item->getId() );
+        $this->assertEquals($this->context->editor(), $itemUpd->editor());
+        $this->assertEquals($itemExp->getTimeCreated(), $itemUpd->getTimeCreated());
+        $this->assertMatchesRegularExpression('/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $itemUpd->getTimeModified());
 
-		$itemExp = clone $itemSaved;
-		$itemExp->setDomain( 'unittest2' );
-		$resultUpd = $this->object->save( $itemExp );
-		$itemUpd = $this->object->get( $itemExp->getId() );
+        $this->assertInstanceOf(\Aimeos\MShop\Common\Item\Iface::class, $resultSaved);
+        $this->assertInstanceOf(\Aimeos\MShop\Common\Item\Iface::class, $resultUpd);
 
-		$this->object->delete( $itemSaved->getId() );
+        $this->expectException('\\Aimeos\\MShop\\Exception');
+        $this->object->get($itemSaved->getId());
+    }
 
-		$this->assertTrue( $item->getId() !== null );
-		$this->assertEquals( $item->getId(), $itemSaved->getId() );
-		$this->assertEquals( $item->getSiteId(), $itemSaved->getSiteId() );
-		$this->assertEquals( $item->getParentId(), $itemSaved->getParentId() );
-		$this->assertEquals( $item->getType(), $itemSaved->getType() );
-		$this->assertEquals( $item->getRefId(), $itemSaved->getRefId() );
-		$this->assertEquals( $item->getDomain(), $itemSaved->getDomain() );
-		$this->assertEquals( $item->getDateStart(), $itemSaved->getDateStart() );
-		$this->assertEquals( $item->getDateEnd(), $itemSaved->getDateEnd() );
-		$this->assertEquals( $item->getPosition(), $itemSaved->getPosition() );
+    public function testSearchItems()
+    {
+        $total = 0;
+        $search = $this->object->filter();
 
-		$this->assertEquals( $this->context->editor(), $itemSaved->editor() );
-		$this->assertMatchesRegularExpression( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $itemSaved->getTimeCreated() );
-		$this->assertMatchesRegularExpression( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $itemSaved->getTimeModified() );
+        $expr = [];
+        $expr[] = $search->compare('!=', 'customer.lists.id', null);
+        $expr[] = $search->compare('!=', 'customer.lists.siteid', null);
+        $expr[] = $search->compare('!=', 'customer.lists.parentid', null);
+        $expr[] = $search->compare('!=', 'customer.lists.key', null);
+        $expr[] = $search->compare('==', 'customer.lists.domain', 'text');
+        $expr[] = $search->compare('==', 'customer.lists.type', 'default');
+        $expr[] = $search->compare('>', 'customer.lists.refid', 0);
+        $expr[] = $search->compare('==', 'customer.lists.datestart', '2010-01-01 00:00:00');
+        $expr[] = $search->compare('==', 'customer.lists.dateend', '2098-01-01 00:00:00');
+        $expr[] = $search->compare('!=', 'customer.lists.config', null);
+        $expr[] = $search->compare('>', 'customer.lists.position', 0);
+        $expr[] = $search->compare('==', 'customer.lists.status', 1);
+        $expr[] = $search->compare('>=', 'customer.lists.mtime', '1970-01-01 00:00:00');
+        $expr[] = $search->compare('>=', 'customer.lists.ctime', '1970-01-01 00:00:00');
+        $expr[] = $search->compare('!=', 'customer.lists.editor', '');
 
-		$this->assertEquals( $itemExp->getId(), $itemUpd->getId() );
-		$this->assertEquals( $itemExp->getSiteId(), $itemUpd->getSiteId() );
-		$this->assertEquals( $itemExp->getParentId(), $itemUpd->getParentId() );
-		$this->assertEquals( $itemExp->getType(), $itemUpd->getType() );
-		$this->assertEquals( $itemExp->getRefId(), $itemUpd->getRefId() );
-		$this->assertEquals( $itemExp->getDomain(), $itemUpd->getDomain() );
-		$this->assertEquals( $itemExp->getDateStart(), $itemUpd->getDateStart() );
-		$this->assertEquals( $itemExp->getDateEnd(), $itemUpd->getDateEnd() );
-		$this->assertEquals( $itemExp->getPosition(), $itemUpd->getPosition() );
+        $search->setConditions($search->and($expr));
+        $search->slice(0, 2);
+        $results = $this->object->search($search, [], $total);
 
-		$this->assertEquals( $this->context->editor(), $itemUpd->editor() );
-		$this->assertEquals( $itemExp->getTimeCreated(), $itemUpd->getTimeCreated() );
-		$this->assertMatchesRegularExpression( '/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', $itemUpd->getTimeModified() );
+        $this->assertEquals(2, count($results));
+        $this->assertEquals(3, $total);
 
-		$this->assertInstanceOf( \Aimeos\MShop\Common\Item\Iface::class, $resultSaved );
-		$this->assertInstanceOf( \Aimeos\MShop\Common\Item\Iface::class, $resultUpd );
+        foreach ($results as $itemId => $item) {
+            $this->assertEquals($itemId, $item->getId());
+        }
+    }
 
-		$this->expectException( '\\Aimeos\\MShop\\Exception' );
-		$this->object->get( $itemSaved->getId() );
-	}
+    public function testSearchItemsAll()
+    {
+        $result = $this->object->search($this->object->filter());
+        $this->assertGreaterThanOrEqual(5, count($result));
+    }
 
+    public function testSearchItemsBase()
+    {
+        $result = $this->object->search($this->object->filter(true));
+        $this->assertGreaterThanOrEqual(5, count($result));
+    }
 
-	public function testSearchItems()
-	{
-		$total = 0;
-		$search = $this->object->filter();
+    public function testGetSubManager()
+    {
+        $this->assertInstanceOf('\\Aimeos\\MShop\\Common\\Manager\\Iface', $this->object->getSubManager('type'));
+        $this->assertInstanceOf('\\Aimeos\\MShop\\Common\\Manager\\Iface', $this->object->getSubManager('type', 'Standard'));
 
-		$expr = [];
-		$expr[] = $search->compare( '!=', 'customer.lists.id', null );
-		$expr[] = $search->compare( '!=', 'customer.lists.siteid', null );
-		$expr[] = $search->compare( '!=', 'customer.lists.parentid', null );
-		$expr[] = $search->compare( '!=', 'customer.lists.key', null );
-		$expr[] = $search->compare( '==', 'customer.lists.domain', 'text' );
-		$expr[] = $search->compare( '==', 'customer.lists.type', 'default' );
-		$expr[] = $search->compare( '>', 'customer.lists.refid', 0 );
-		$expr[] = $search->compare( '==', 'customer.lists.datestart', '2010-01-01 00:00:00' );
-		$expr[] = $search->compare( '==', 'customer.lists.dateend', '2098-01-01 00:00:00' );
-		$expr[] = $search->compare( '!=', 'customer.lists.config', null );
-		$expr[] = $search->compare( '>', 'customer.lists.position', 0 );
-		$expr[] = $search->compare( '==', 'customer.lists.status', 1 );
-		$expr[] = $search->compare( '>=', 'customer.lists.mtime', '1970-01-01 00:00:00' );
-		$expr[] = $search->compare( '>=', 'customer.lists.ctime', '1970-01-01 00:00:00' );
-		$expr[] = $search->compare( '!=', 'customer.lists.editor', '' );
-
-		$search->setConditions( $search->and( $expr ) );
-		$search->slice( 0, 2 );
-		$results = $this->object->search( $search, [], $total );
-
-		$this->assertEquals( 2, count( $results ) );
-		$this->assertEquals( 3, $total );
-
-		foreach( $results as $itemId => $item ) {
-			$this->assertEquals( $itemId, $item->getId() );
-		}
-	}
-
-
-	public function testSearchItemsAll()
-	{
-		$result = $this->object->search( $this->object->filter() );
-		$this->assertGreaterThanOrEqual( 5, count( $result ) );
-	}
-
-
-	public function testSearchItemsBase()
-	{
-		$result = $this->object->search( $this->object->filter( true ) );
-		$this->assertGreaterThanOrEqual( 5, count( $result ) );
-	}
-
-
-	public function testGetSubManager()
-	{
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Common\\Manager\\Iface', $this->object->getSubManager( 'type' ) );
-		$this->assertInstanceOf( '\\Aimeos\\MShop\\Common\\Manager\\Iface', $this->object->getSubManager( 'type', 'Standard' ) );
-
-		$this->expectException( \LogicException::class );
-		$this->object->getSubManager( 'unknown' );
-	}
+        $this->expectException(\LogicException::class);
+        $this->object->getSubManager('unknown');
+    }
 }

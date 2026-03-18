@@ -1,364 +1,330 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2015-2026
  */
 
-
 namespace Aimeos\Base\Filesystem;
-
 
 class LaravelTest extends \PHPUnit\Framework\TestCase
 {
-	private $mock;
-	private $object;
+    private $mock;
+    private $object;
 
+    protected function setUp(): void
+    {
+        if (!interface_exists('\\Illuminate\\Contracts\\Filesystem\\Filesystem')) {
+            $this->markTestSkipped('Install Laravel framework first');
+        }
 
-	protected function setUp() : void
-	{
-		if( !interface_exists( '\\Illuminate\\Contracts\\Filesystem\\Filesystem' ) ) {
-			$this->markTestSkipped( 'Install Laravel framework first' );
-		}
+        $this->mock = $this->getMockBuilder('\\Illuminate\\Contracts\\Filesystem\\Filesystem')
+            ->disableOriginalConstructor()
+            ->getMock();
 
-		$this->mock = $this->getMockBuilder( '\\Illuminate\\Contracts\\Filesystem\\Filesystem' )
-			->disableOriginalConstructor()
-			->getMock();
+        $this->object = new \Aimeos\Base\Filesystem\Laravel($this->mock, sys_get_temp_dir());
+    }
 
-		$this->object = new \Aimeos\Base\Filesystem\Laravel( $this->mock, sys_get_temp_dir() );
-	}
+    protected function tearDown(): void
+    {
+        unset($this->object);
+    }
 
+    public function testIsdir()
+    {
+        $this->mock->expects($this->once())->method('directories')
+            ->willReturn([ 't', 'test', 'es' ]);
 
-	protected function tearDown() : void
-	{
-		unset( $this->object );
-	}
+        $this->assertTrue($this->object->isdir('test'));
+    }
 
+    public function testIsdirFalse()
+    {
+        $this->mock->expects($this->once())->method('directories')
+            ->willReturn([ 't', 'es' ]);
 
-	public function testIsdir()
-	{
-		$this->mock->expects( $this->once() )->method( 'directories' )
-			->willReturn( array( 't', 'test', 'es' ) );
+        $this->assertFalse($this->object->isdir('test'));
+    }
 
-		$this->assertTrue( $this->object->isdir( 'test' ) );
-	}
+    public function testMkdir()
+    {
+        $this->mock->expects($this->once())->method('makeDirectory');
 
+        $this->object->mkdir('test');
+    }
 
-	public function testIsdirFalse()
-	{
-		$this->mock->expects( $this->once() )->method( 'directories' )
-			->willReturn( array( 't', 'es' ) );
+    public function testMkdirException()
+    {
+        $this->mock->expects($this->once())->method('makeDirectory')
+            ->will($this->throwException(new \RuntimeException()));
 
-		$this->assertFalse( $this->object->isdir( 'test' ) );
-	}
+        $this->expectException(\Aimeos\Base\Filesystem\Exception::class);
+        $this->object->mkdir('test');
+    }
 
+    public function testRmdir()
+    {
+        $this->mock->expects($this->once())->method('deleteDirectory');
 
-	public function testMkdir()
-	{
-		$this->mock->expects( $this->once() )->method( 'makeDirectory' );
+        $this->object->rmdir('test');
+    }
 
-		$this->object->mkdir( 'test' );
-	}
+    public function testRmdirException()
+    {
+        $this->mock->expects($this->once())->method('deleteDirectory')
+            ->will($this->throwException(new \RuntimeException()));
 
+        $this->expectException(\Aimeos\Base\Filesystem\Exception::class);
+        $this->object->rmdir('test');
+    }
 
-	public function testMkdirException()
-	{
-		$this->mock->expects( $this->once() )->method( 'makeDirectory' )
-			->will( $this->throwException( new \RuntimeException() ) );
+    public function testScan()
+    {
+        $list = [ 't', 'es', 'st' ];
 
-		$this->expectException( \Aimeos\Base\Filesystem\Exception::class );
-		$this->object->mkdir( 'test' );
-	}
+        $this->mock->expects($this->once())->method('directories')
+            ->willReturn([ 't', 'es' ]);
 
+        $this->mock->expects($this->once())->method('files')
+            ->willReturn([ 'st' ]);
 
-	public function testRmdir()
-	{
-		$this->mock->expects( $this->once() )->method( 'deleteDirectory' );
+        $result = $this->object->scan();
 
-		$this->object->rmdir( 'test' );
-	}
+        $this->assertIsArray($result);
 
+        foreach ($result as $entry) {
+            $this->assertTrue(in_array($entry, $list));
+        }
+    }
 
-	public function testRmdirException()
-	{
-		$this->mock->expects( $this->once() )->method( 'deleteDirectory' )
-			->will( $this->throwException( new \RuntimeException() ) );
+    public function testScanException()
+    {
+        $this->mock->expects($this->once())->method('directories')
+            ->will($this->throwException(new \RuntimeException()));
 
-		$this->expectException( \Aimeos\Base\Filesystem\Exception::class );
-		$this->object->rmdir( 'test' );
-	}
+        $this->expectException(\Aimeos\Base\Filesystem\Exception::class);
+        $this->object->scan('test');
+    }
 
+    public function testSize()
+    {
+        $this->mock->expects($this->once())->method('size')
+            ->willReturn(4);
 
-	public function testScan()
-	{
-		$list = array( 't', 'es', 'st' );
+        $result = $this->object->size('test');
 
-		$this->mock->expects( $this->once() )->method( 'directories' )
-			->willReturn( array( 't', 'es' ) );
+        $this->assertEquals(4, $result);
+    }
 
-		$this->mock->expects( $this->once() )->method( 'files' )
-			->willReturn( array( 'st' ) );
+    public function testSizeException()
+    {
+        $this->mock->expects($this->once())->method('size')
+            ->will($this->throwException(new \RuntimeException()));
 
-		$result = $this->object->scan();
+        $this->expectException(\Aimeos\Base\Filesystem\Exception::class);
+        $this->object->size('test');
+    }
 
-		$this->assertIsArray( $result );
+    public function testTime()
+    {
+        $this->mock->expects($this->once())->method('lastModified')
+            ->willReturn(1);
 
-		foreach( $result as $entry ) {
-			$this->assertTrue( in_array( $entry, $list ) );
-		}
-	}
+        $result = $this->object->time('test');
 
+        $this->assertGreaterThan(0, $result);
+    }
 
-	public function testScanException()
-	{
-		$this->mock->expects( $this->once() )->method( 'directories' )
-			->will( $this->throwException( new \RuntimeException() ) );
+    public function testTimeException()
+    {
+        $this->mock->expects($this->once())->method('lastModified')
+            ->will($this->throwException(new \RuntimeException()));
 
-		$this->expectException( \Aimeos\Base\Filesystem\Exception::class );
-		$this->object->scan( 'test' );
-	}
+        $this->expectException(\Aimeos\Base\Filesystem\Exception::class);
+        $this->object->time('test');
+    }
 
+    public function testRm()
+    {
+        $this->mock->expects($this->once())->method('delete');
 
-	public function testSize()
-	{
-		$this->mock->expects( $this->once() )->method( 'size' )
-			->willReturn( 4 );
+        $this->object->rm('test');
+    }
 
-		$result = $this->object->size( 'test' );
+    public function testRmException()
+    {
+        $this->mock->expects($this->once())->method('delete')
+            ->will($this->throwException(new \RuntimeException()));
 
-		$this->assertEquals( 4, $result );
-	}
+        $this->expectException(\Aimeos\Base\Filesystem\Exception::class);
+        $this->object->rm('test');
+    }
 
+    public function testHas()
+    {
+        $this->mock->expects($this->once())->method('exists')
+            ->willReturn(true);
 
-	public function testSizeException()
-	{
-		$this->mock->expects( $this->once() )->method( 'size' )
-			->will( $this->throwException( new \RuntimeException() ) );
+        $result = $this->object->has('test');
 
-		$this->expectException( \Aimeos\Base\Filesystem\Exception::class );
-		$this->object->size( 'test' );
-	}
+        $this->assertTrue($result);
+    }
 
+    public function testHasFalse()
+    {
+        $this->mock->expects($this->once())->method('exists')
+            ->willReturn(false);
 
-	public function testTime()
-	{
-		$this->mock->expects( $this->once() )->method( 'lastModified' )
-			->willReturn( 1 );
+        $result = $this->object->has('test');
 
-		$result = $this->object->time( 'test' );
+        $this->assertFalse($result);
+    }
 
-		$this->assertGreaterThan( 0, $result );
-	}
+    public function testRead()
+    {
+        $this->mock->expects($this->once())->method('get')
+            ->willReturn('test');
 
+        $result = $this->object->read('file');
 
-	public function testTimeException()
-	{
-		$this->mock->expects( $this->once() )->method( 'lastModified' )
-			->will( $this->throwException( new \RuntimeException() ) );
+        $this->assertEquals('test', $result);
+    }
 
-		$this->expectException( \Aimeos\Base\Filesystem\Exception::class );
-		$this->object->time( 'test' );
-	}
+    public function testReadException()
+    {
+        $this->mock->expects($this->once())->method('get')
+            ->will($this->throwException(new \RuntimeException()));
 
+        $this->expectException(\Aimeos\Base\Filesystem\Exception::class);
+        $this->object->read('readinvalid');
+    }
 
-	public function testRm()
-	{
-		$this->mock->expects( $this->once() )->method( 'delete' );
+    public function testReadf()
+    {
+        $this->mock->expects($this->once())->method('get')
+            ->willReturn('test');
 
-		$this->object->rm( 'test' );
-	}
+        $result = $this->object->readf('file');
 
+        $this->assertEquals('test', file_get_contents($result));
+        unlink($result);
+    }
 
-	public function testRmException()
-	{
-		$this->mock->expects( $this->once() )->method( 'delete' )
-			->will( $this->throwException( new \RuntimeException() ) );
+    public function testReads()
+    {
+        $this->mock->expects($this->once())->method('get')
+            ->willReturn('test');
 
-		$this->expectException( \Aimeos\Base\Filesystem\Exception::class );
-		$this->object->rm( 'test' );
-	}
+        $handle = $this->object->reads('file');
 
+        $this->assertIsResource($handle);
+        $this->assertEquals('test', fgets($handle));
 
-	public function testHas()
-	{
-		$this->mock->expects( $this->once() )->method( 'exists' )
-			->willReturn( true );
+        fclose($handle);
+    }
 
-		$result = $this->object->has( 'test' );
+    public function testReadsException()
+    {
+        $this->mock->expects($this->once())->method('get')
+            ->will($this->throwException(new \RuntimeException()));
 
-		$this->assertTrue( $result );
-	}
+        $this->expectException(\Aimeos\Base\Filesystem\Exception::class);
+        $this->object->reads('readinvalid');
+    }
 
+    public function testWrite()
+    {
+        $this->mock->expects($this->once())->method('put');
 
-	public function testHasFalse()
-	{
-		$this->mock->expects( $this->once() )->method( 'exists' )
-			->willReturn( false );
+        $this->object->write('file', 'test');
+    }
 
-		$result = $this->object->has( 'test' );
+    public function testWriteException()
+    {
+        $this->mock->expects($this->once())->method('put')
+            ->will($this->throwException(new \RuntimeException()));
 
-		$this->assertFalse( $result );
-	}
+        $this->expectException(\Aimeos\Base\Filesystem\Exception::class);
+        $this->object->write('', 'test');
+    }
 
+    public function testWritef()
+    {
+        $file = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'file99';
+        file_put_contents($file, 'test');
 
-	public function testRead()
-	{
-		$this->mock->expects( $this->once() )->method( 'get' )
-			->willReturn( 'test' );
+        $this->mock->expects($this->once())->method('put');
 
-		$result = $this->object->read( 'file' );
+        $this->object->writef('file', $file);
 
-		$this->assertEquals( 'test', $result );
-	}
+        unlink($file);
+    }
 
+    public function testWritefException()
+    {
+        $this->expectException(\Aimeos\Base\Filesystem\Exception::class);
+        $this->object->writef('', 'invalid');
+    }
 
-	public function testReadException()
-	{
-		$this->mock->expects( $this->once() )->method( 'get' )
-			->will( $this->throwException( new \RuntimeException() ) );
+    public function testWrites()
+    {
+        $this->mock->expects($this->once())->method('put');
 
-		$this->expectException( \Aimeos\Base\Filesystem\Exception::class );
-		$this->object->read( 'readinvalid' );
-	}
+        $handle = fopen(__FILE__, 'r');
 
+        $this->object->writes('file', $handle);
 
-	public function testReadf()
-	{
-		$this->mock->expects( $this->once() )->method( 'get' )
-			->willReturn( 'test' );
+        fclose($handle);
+    }
 
-		$result = $this->object->readf( 'file' );
+    public function testWritesException()
+    {
+        $this->mock->expects($this->once())->method('put')
+            ->will($this->throwException(new \RuntimeException()));
 
-		$this->assertEquals( 'test', file_get_contents( $result ) );
-		unlink( $result );
-	}
+        $handle = fopen(__FILE__, 'r');
 
+        $this->expectException(\Aimeos\Base\Filesystem\Exception::class);
+        $this->object->writes('file', $handle);
+    }
 
-	public function testReads()
-	{
-		$this->mock->expects( $this->once() )->method( 'get' )
-			->willReturn( 'test' );
+    public function testWritesException2()
+    {
+        $this->expectException(\Aimeos\Base\Filesystem\Exception::class);
+        $this->object->writes('file', null);
+    }
 
-		$handle = $this->object->reads( 'file' );
+    public function testMove()
+    {
+        $this->mock->expects($this->once())->method('move');
 
-		$this->assertIsResource( $handle );
-		$this->assertEquals( 'test', fgets( $handle ) );
+        $this->object->move('file1', 'file2');
+    }
 
-		fclose( $handle );
-	}
+    public function testMoveException()
+    {
+        $this->mock->expects($this->once())->method('move')
+            ->will($this->throwException(new \RuntimeException()));
 
+        $this->expectException(\Aimeos\Base\Filesystem\Exception::class);
+        $this->object->move('file1', 'file2');
+    }
 
-	public function testReadsException()
-	{
-		$this->mock->expects( $this->once() )->method( 'get' )
-			->will( $this->throwException( new \RuntimeException() ) );
+    public function testCopy()
+    {
+        $this->mock->expects($this->once())->method('copy');
 
-		$this->expectException( \Aimeos\Base\Filesystem\Exception::class );
-		$this->object->reads( 'readinvalid' );
-	}
+        $this->object->copy('file1', 'file2');
+    }
 
+    public function testCopyException()
+    {
+        $this->mock->expects($this->once())->method('copy')
+            ->will($this->throwException(new \RuntimeException()));
 
-	public function testWrite()
-	{
-		$this->mock->expects( $this->once() )->method( 'put' );
-
-		$this->object->write( 'file', 'test' );
-	}
-
-
-	public function testWriteException()
-	{
-		$this->mock->expects( $this->once() )->method( 'put' )
-			->will( $this->throwException( new \RuntimeException() ) );
-
-		$this->expectException( \Aimeos\Base\Filesystem\Exception::class );
-		$this->object->write( '', 'test' );
-	}
-
-
-	public function testWritef()
-	{
-		$file = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'file99';
-		file_put_contents( $file, 'test' );
-
-		$this->mock->expects( $this->once() )->method( 'put' );
-
-		$this->object->writef( 'file', $file );
-
-		unlink( $file );
-	}
-
-
-	public function testWritefException()
-	{
-		$this->expectException( \Aimeos\Base\Filesystem\Exception::class );
-		$this->object->writef( '', 'invalid' );
-	}
-
-
-	public function testWrites()
-	{
-		$this->mock->expects( $this->once() )->method( 'put' );
-
-		$handle = fopen( __FILE__, 'r' );
-
-		$this->object->writes( 'file', $handle );
-
-		fclose( $handle );
-	}
-
-
-	public function testWritesException()
-	{
-		$this->mock->expects( $this->once() )->method( 'put' )
-			->will( $this->throwException( new \RuntimeException() ) );
-
-		$handle = fopen( __FILE__, 'r' );
-
-		$this->expectException( \Aimeos\Base\Filesystem\Exception::class );
-		$this->object->writes( 'file', $handle );
-	}
-
-
-	public function testWritesException2()
-	{
-		$this->expectException( \Aimeos\Base\Filesystem\Exception::class );
-		$this->object->writes( 'file', null );
-	}
-
-
-	public function testMove()
-	{
-		$this->mock->expects( $this->once() )->method( 'move' );
-
-		$this->object->move( 'file1', 'file2' );
-	}
-
-
-	public function testMoveException()
-	{
-		$this->mock->expects( $this->once() )->method( 'move' )
-			->will( $this->throwException( new \RuntimeException() ) );
-
-		$this->expectException( \Aimeos\Base\Filesystem\Exception::class );
-		$this->object->move( 'file1', 'file2' );
-	}
-
-
-	public function testCopy()
-	{
-		$this->mock->expects( $this->once() )->method( 'copy' );
-
-		$this->object->copy( 'file1', 'file2' );
-	}
-
-
-	public function testCopyException()
-	{
-		$this->mock->expects( $this->once() )->method( 'copy' )
-			->will( $this->throwException( new \RuntimeException() ) );
-
-		$this->expectException( \Aimeos\Base\Filesystem\Exception::class );
-		$this->object->copy( 'file1', 'file2' );
-	}
+        $this->expectException(\Aimeos\Base\Filesystem\Exception::class);
+        $this->object->copy('file1', 'file2');
+    }
 }

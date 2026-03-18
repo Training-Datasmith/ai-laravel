@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2022-2026
@@ -7,9 +9,7 @@
  * @subpackage Mail
  */
 
-
 namespace Aimeos\Base\Mail;
-
 
 /**
  * Laravel implementation for creating and sending e-mails.
@@ -19,41 +19,38 @@ namespace Aimeos\Base\Mail;
  */
 class Laravel implements \Aimeos\Base\Mail\Iface
 {
-	private \Illuminate\Mail\Mailer $mailer;
+    private \Illuminate\Mail\Mailer $mailer;
 
+    /**
+     * Initializes the instance of the class.
+     *
+     * @param \Illuminate\Mail\Mailer $closure Laravel mailer object
+     */
+    public function __construct(\Illuminate\Mail\Mailer $mailer)
+    {
+        $this->mailer = $mailer;
+    }
 
-	/**
-	 * Initializes the instance of the class.
-	 *
-	 * @param \Illuminate\Mail\Mailer $closure Laravel mailer object
-	 */
-	public function __construct( \Illuminate\Mail\Mailer $mailer )
-	{
-		$this->mailer = $mailer;
-	}
+    /**
+     * Creates a new e-mail message object.
+     *
+     * @param string $charset Default charset of the message
+     * @return \Aimeos\Base\Mail\Message\Iface E-mail message object
+     */
+    public function create(string $charset = 'UTF-8'): \Aimeos\Base\Mail\Message\Iface
+    {
+        $message = new \Symfony\Component\Mime\Email();
+        return new \Aimeos\Base\Mail\Message\Laravel($this->mailer, $message, $charset);
+    }
 
-
-	/**
-	 * Creates a new e-mail message object.
-	 *
-	 * @param string $charset Default charset of the message
-	 * @return \Aimeos\Base\Mail\Message\Iface E-mail message object
-	 */
-	public function create( string $charset = 'UTF-8' ) : \Aimeos\Base\Mail\Message\Iface
-	{
-		$message = new \Symfony\Component\Mime\Email();
-		return new \Aimeos\Base\Mail\Message\Laravel( $this->mailer, $message, $charset );
-	}
-
-
-	/**
-	 * Sends the e-mail message to the mail server.
-	 *
-	 * @param \Aimeos\Base\Mail\Message\Iface $message E-mail message object
-	 */
-	public function send( \Aimeos\Base\Mail\Message\Iface $message ) : Iface
-	{
-		$message->send();
-		return $this;
-	}
+    /**
+     * Sends the e-mail message to the mail server.
+     *
+     * @param \Aimeos\Base\Mail\Message\Iface $message E-mail message object
+     */
+    public function send(\Aimeos\Base\Mail\Message\Iface $message): Iface
+    {
+        $message->send();
+        return $this;
+    }
 }

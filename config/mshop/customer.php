@@ -1,16 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2015-2026
  */
 
-
-return array(
-	'manager' => array(
-		'laravel' => array(
-			'aggregate' => array(
-				'ansi' => '
+return [
+    'manager' => [
+        'laravel' => [
+            'aggregate' => [
+                'ansi' => '
 					SELECT :keys, COUNT("val") AS "count"
 					FROM (
 						SELECT :acols, :val AS "val"
@@ -23,7 +24,7 @@ return array(
 					) AS list
 					GROUP BY :keys
 				',
-				'mysql' => '
+                'mysql' => '
 					SELECT :keys, COUNT("val") AS "count"
 					FROM (
 						SELECT :acols, :val AS "val"
@@ -35,22 +36,22 @@ return array(
 						LIMIT :size OFFSET :start
 					) AS list
 					GROUP BY :keys
-				'
-			),
-			'clear' => array(
-				'ansi' => '
+				',
+            ],
+            'clear' => [
+                'ansi' => '
 					DELETE FROM "users"
 					WHERE :cond AND "siteid" LIKE ?
 				',
-			),
-			'delete' => array(
-				'ansi' => '
+            ],
+            'delete' => [
+                'ansi' => '
 					DELETE FROM "users"
 					WHERE :cond AND ( "siteid" LIKE ? OR "siteid" = ? )
 				',
-			),
-			'insert' => array(
-				'ansi' => '
+            ],
+            'insert' => [
+                'ansi' => '
 					INSERT INTO "users" ( :names
 						"name", "email", "company", "vatid", "salutation", "title",
 						"firstname", "lastname", "address1", "address2", "address3",
@@ -62,9 +63,9 @@ return array(
 						?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
 					)
 				',
-			),
-			'update' => array(
-				'ansi' => '
+            ],
+            'update' => [
+                'ansi' => '
 					UPDATE "users"
 					SET :names
 						"name" = ?, "email" = ?, "company" = ?, "vatid" = ?,
@@ -76,9 +77,9 @@ return array(
 						"status" = ?, "email_verified_at" = ?, "password" = ?, "updated_at" = ?, "editor" = ?
 					WHERE ( "siteid" LIKE ? OR "siteid" = ? ) AND "id" = ?
 				',
-			),
-			'search' => array(
-				'ansi' => '
+            ],
+            'search' => [
+                'ansi' => '
 					SELECT :columns, mcus."superuser" AS ".super"
 					FROM "users" mcus
 					:joins
@@ -87,7 +88,7 @@ return array(
 					ORDER BY :order
 					OFFSET :start ROWS FETCH NEXT :size ROWS ONLY
 				',
-				'mysql' => '
+                'mysql' => '
 					SELECT :columns, mcus."superuser" AS ".super"
 					FROM "users" mcus
 					:joins
@@ -96,16 +97,16 @@ return array(
 					ORDER BY :order
 					LIMIT :size OFFSET :start
 				',
-			),
-			'newid' => array(
-				'db2' => 'SELECT IDENTITY_VAL_LOCAL()',
-				'mysql' => 'SELECT LAST_INSERT_ID()',
-				'oracle' => 'SELECT users.CURRVAL FROM DUAL',
-				'pgsql' => 'SELECT lastval()',
-				'sqlite' => 'SELECT last_insert_rowid()',
-				'sqlsrv' => 'SELECT SCOPE_IDENTITY()',
-				'sqlanywhere' => 'SELECT @@IDENTITY',
-			),
-		),
-	),
-);
+            ],
+            'newid' => [
+                'db2' => 'SELECT IDENTITY_VAL_LOCAL()',
+                'mysql' => 'SELECT LAST_INSERT_ID()',
+                'oracle' => 'SELECT users.CURRVAL FROM DUAL',
+                'pgsql' => 'SELECT lastval()',
+                'sqlite' => 'SELECT last_insert_rowid()',
+                'sqlsrv' => 'SELECT SCOPE_IDENTITY()',
+                'sqlanywhere' => 'SELECT @@IDENTITY',
+            ],
+        ],
+    ],
+];
