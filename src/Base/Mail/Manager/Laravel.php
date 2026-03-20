@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, https://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2024
  * @package Base
  * @subpackage Mail
  */
-
 namespace Aimeos\Base\Mail\Manager;
 
 /**
@@ -24,10 +22,9 @@ class Laravel implements Iface
      *
      * @param \Illuminate\Mail\MailManager $manager Mail manager object
      */
-    public function __construct(private ?\Illuminate\Mail\MailManager $manager)
+    public function __construct(private ?\Illuminate\Mail\Mail_Manager $manager)
     {
     }
-
     /**
      * Returns the mailer for the given name
      *
@@ -36,6 +33,6 @@ class Laravel implements Iface
      */
     public function get(?string $name = null): \Aimeos\Base\Mail\Iface
     {
-        return new \Aimeos\Base\Mail\Laravel($this->manager->mailer($name ?: $this->manager->getDefaultDriver()));
+        return new \Aimeos\Base\Mail\Laravel($this->manager->mailer($name ?: $this->manager->get_default_driver()));
     }
 }

@@ -1,18 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2022-2026
  * @package Base
  * @subpackage Mail
  */
-
 namespace Aimeos\Base\Mail\Message;
 
 use Symfony\Component\Mime\Address;
-
 /**
  * Laravel implementation for creating e-mails.
  *
@@ -23,7 +20,6 @@ class Laravel implements \Aimeos\Base\Mail\Message\Iface
 {
     private \Symfony\Component\Mime\Email $message;
     private \Illuminate\Mail\Mailer $mailer;
-
     /**
      * Initializes the message instance.
      *
@@ -36,7 +32,6 @@ class Laravel implements \Aimeos\Base\Mail\Message\Iface
         $this->message = $message;
         $this->mailer = $mailer;
     }
-
     /**
      * Adds a source e-mail address of the message.
      *
@@ -49,10 +44,8 @@ class Laravel implements \Aimeos\Base\Mail\Message\Iface
         if ($email) {
             $this->message->from(new Address($email, (string) $name));
         }
-
         return $this;
     }
-
     /**
      * Adds a destination e-mail address of the target user mailbox.
      *
@@ -65,10 +58,8 @@ class Laravel implements \Aimeos\Base\Mail\Message\Iface
         if ($email) {
             $this->message->to(new Address($email, (string) $name));
         }
-
         return $this;
     }
-
     /**
      * Adds a destination e-mail address for a copy of the message.
      *
@@ -81,10 +72,8 @@ class Laravel implements \Aimeos\Base\Mail\Message\Iface
         if ($email) {
             $this->message->cc(new Address($email, (string) $name));
         }
-
         return $this;
     }
-
     /**
      * Adds a destination e-mail address for a hidden copy of the message.
      *
@@ -95,13 +84,11 @@ class Laravel implements \Aimeos\Base\Mail\Message\Iface
     {
         if (!empty($email)) {
             foreach ((array) $email as $addr) {
-                $this->message->addBcc($addr);
+                $this->message->add_bcc($addr);
             }
         }
-
         return $this;
     }
-
     /**
      * Adds the return e-mail address for the message.
      *
@@ -109,15 +96,13 @@ class Laravel implements \Aimeos\Base\Mail\Message\Iface
      * @param string|null $name Name of the user which should receive all replies or null for no name
      * @return \Aimeos\Base\Mail\Message\Iface Message object
      */
-    public function replyTo(string $email, ?string $name = null): Iface
+    public function reply_to(string $email, ?string $name = null): Iface
     {
         if ($email) {
-            $this->message->replyTo(new Address($email, (string) $name));
+            $this->message->reply_to(new Address($email, (string) $name));
         }
-
         return $this;
     }
-
     /**
      * Adds a custom header to the message.
      *
@@ -128,12 +113,10 @@ class Laravel implements \Aimeos\Base\Mail\Message\Iface
     public function header(string $name, string $value): Iface
     {
         if ($name) {
-            $this->message->getHeaders()->add(new \Symfony\Component\Mime\Header\UnstructuredHeader($name, $value));
+            $this->message->get_headers()->add(new \Symfony\Component\Mime\Header\Unstructured_Header($name, $value));
         }
-
         return $this;
     }
-
     /**
      * Sends the e-mail message to the mail server.
      *
@@ -141,12 +124,9 @@ class Laravel implements \Aimeos\Base\Mail\Message\Iface
      */
     public function send(): Iface
     {
-        $this->mailer->getSymfonyTransport()
-            ->send($this->message, \Symfony\Component\Mailer\Envelope::create($this->message));
-
+        $this->mailer->get_symfony_transport()->send($this->message, \Symfony\Component\Mailer\Envelope::create($this->message));
         return $this;
     }
-
     /**
      * Sets the e-mail address and name of the sender of the message (higher precedence than "From").
      *
@@ -159,10 +139,8 @@ class Laravel implements \Aimeos\Base\Mail\Message\Iface
         if ($email) {
             $this->message->sender(new Address($email, (string) $name));
         }
-
         return $this;
     }
-
     /**
      * Sets the subject of the message.
      *
@@ -174,10 +152,8 @@ class Laravel implements \Aimeos\Base\Mail\Message\Iface
         if ($subject) {
             $this->message->subject($subject);
         }
-
         return $this;
     }
-
     /**
      * Sets the text body of the message.
      *
@@ -189,10 +165,8 @@ class Laravel implements \Aimeos\Base\Mail\Message\Iface
         if ($message) {
             $this->message->text($message, $this->charset);
         }
-
         return $this;
     }
-
     /**
      * Sets the HTML body of the message.
      *
@@ -204,10 +178,8 @@ class Laravel implements \Aimeos\Base\Mail\Message\Iface
         if ($message) {
             $this->message->html($message, $this->charset);
         }
-
         return $this;
     }
-
     /**
      * Adds an attachment to the message.
      *
@@ -222,13 +194,10 @@ class Laravel implements \Aimeos\Base\Mail\Message\Iface
         if ($data) {
             $mimetype = $mimetype ?: (new \finfo(FILEINFO_MIME_TYPE))->buffer($data);
             $filename = $filename ?: md5($data);
-
             $this->message->attach($data, $filename, $mimetype);
         }
-
         return $this;
     }
-
     /**
      * Embeds an attachment into the message and returns its reference.
      *
@@ -242,14 +211,11 @@ class Laravel implements \Aimeos\Base\Mail\Message\Iface
         if ($data) {
             $mimetype = $mimetype ?: (new \finfo(FILEINFO_MIME_TYPE))->buffer($data);
             $filename = $filename ?: md5($data);
-
             $this->message->embed($data, $filename, $mimetype);
             return 'cid:' . $filename;
         }
-
         return '';
     }
-
     /**
      * Clones the internal objects.
      */

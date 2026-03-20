@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2015-2026
  * @package Base
  * @subpackage Filesystem
  */
-
 namespace Aimeos\Base\Filesystem;
 
 /**
@@ -17,10 +15,9 @@ namespace Aimeos\Base\Filesystem;
  * @package Base
  * @subpackage Filesystem
  */
-class Laravel implements Iface, DirIface, MetaIface
+class Laravel implements Iface, Dir_Iface, Meta_Iface
 {
     private \Illuminate\Contracts\Filesystem\Filesystem $fs;
-
     /**
      * Initializes the object
      *
@@ -31,7 +28,6 @@ class Laravel implements Iface, DirIface, MetaIface
     {
         $this->fs = $fs;
     }
-
     /**
      * Tests if the given path is a directory
      *
@@ -43,7 +39,6 @@ class Laravel implements Iface, DirIface, MetaIface
     {
         return in_array(basename($path), $this->fs->directories(dirname($path)));
     }
-
     /**
      * Creates a new directory for the given path
      *
@@ -51,17 +46,15 @@ class Laravel implements Iface, DirIface, MetaIface
      * @return \Aimeos\Base\Filesystem\DirIface Filesystem object for fluent interface
      * @throws \Aimeos\Base\Filesystem\Exception If an error occurs
      */
-    public function mkdir(string $path): DirIface
+    public function mkdir(string $path): Dir_Iface
     {
         try {
-            $this->fs->makeDirectory($path);
+            $this->fs->make_directory($path);
         } catch (\Exception $e) {
-            throw new Exception($e->getMessage(), 0, $e);
+            throw new Exception($e->get_message(), 0, $e);
         }
-
         return $this;
     }
-
     /**
      * Deletes the directory for the given path
      *
@@ -69,17 +62,15 @@ class Laravel implements Iface, DirIface, MetaIface
      * @return \Aimeos\Base\Filesystem\DirIface Filesystem object for fluent interface
      * @throws \Aimeos\Base\Filesystem\Exception If an error occurs
      */
-    public function rmdir(string $path): DirIface
+    public function rmdir(string $path): Dir_Iface
     {
         try {
-            $this->fs->deleteDirectory($path);
+            $this->fs->delete_directory($path);
         } catch (\Exception $e) {
-            throw new Exception($e->getMessage(), 0, $e);
+            throw new Exception($e->get_message(), 0, $e);
         }
-
         return $this;
     }
-
     /**
      * Returns an iterator over the entries in the given path
      *
@@ -94,10 +85,9 @@ class Laravel implements Iface, DirIface, MetaIface
         try {
             return array_merge($this->fs->directories($path), $this->fs->files($path));
         } catch (\Exception $e) {
-            throw new Exception($e->getMessage(), 0, $e);
+            throw new Exception($e->get_message(), 0, $e);
         }
     }
-
     /**
      * Returns the file size
      *
@@ -110,10 +100,9 @@ class Laravel implements Iface, DirIface, MetaIface
         try {
             return $this->fs->size($path);
         } catch (\Exception $e) {
-            throw new Exception($e->getMessage(), 0, $e);
+            throw new Exception($e->get_message(), 0, $e);
         }
     }
-
     /**
      * Returns the Unix time stamp for the file
      *
@@ -124,12 +113,11 @@ class Laravel implements Iface, DirIface, MetaIface
     public function time(string $path): int
     {
         try {
-            return $this->fs->lastModified($path);
+            return $this->fs->last_modified($path);
         } catch (\Exception $e) {
-            throw new Exception($e->getMessage(), 0, $e);
+            throw new Exception($e->get_message(), 0, $e);
         }
     }
-
     /**
      * Deletes the file for the given path
      *
@@ -142,12 +130,10 @@ class Laravel implements Iface, DirIface, MetaIface
         try {
             $this->fs->delete($path);
         } catch (\Exception $e) {
-            throw new Exception($e->getMessage(), 0, $e);
+            throw new Exception($e->get_message(), 0, $e);
         }
-
         return $this;
     }
-
     /**
      * Tests if a file exists at the given path
      *
@@ -158,7 +144,6 @@ class Laravel implements Iface, DirIface, MetaIface
     {
         return $this->fs->exists($path);
     }
-
     /**
      * Returns the content of the file
      *
@@ -173,10 +158,9 @@ class Laravel implements Iface, DirIface, MetaIface
         try {
             return $this->fs->get($path);
         } catch (\Exception $e) {
-            throw new Exception($e->getMessage(), 0, $e);
+            throw new Exception($e->get_message(), 0, $e);
         }
     }
-
     /**
      * Reads the content of the remote file and writes it to a local one
      *
@@ -190,14 +174,11 @@ class Laravel implements Iface, DirIface, MetaIface
         if ($local === null && ($local = @tempnam($this->tempdir, 'ai-')) === false) {
             throw new Exception(sprintf('Unable to create file in "%1$s"', $this->tempdir));
         }
-
         if (@file_put_contents($local, $this->fs->get($path)) === false) {
             throw new Exception(sprintf('Couldn\'t write file "%1$s"', $local));
         }
-
         return $local;
     }
-
     /**
      * Returns the stream descriptor for the file
      *
@@ -212,24 +193,19 @@ class Laravel implements Iface, DirIface, MetaIface
         try {
             $content = $this->fs->get($path);
         } catch (\Exception $e) {
-            throw new Exception($e->getMessage(), 0, $e);
+            throw new Exception($e->get_message(), 0, $e);
         }
-
         if (($stream = tmpfile()) === false) {
             throw new Exception('Couldn\'t create temporary file');
         }
-
         if (fwrite($stream, $content) === false) {
             throw new Exception('Couldn\'t write to temporary file');
         }
-
         if (rewind($stream) === false) {
             throw new Exception('Couldn\'t rewind temporary file');
         }
-
         return $stream;
     }
-
     /**
      * Writes the given content to the file
      *
@@ -245,12 +221,10 @@ class Laravel implements Iface, DirIface, MetaIface
         try {
             $this->fs->put($path, $content);
         } catch (\Exception $e) {
-            throw new Exception($e->getMessage(), 0, $e);
+            throw new Exception($e->get_message(), 0, $e);
         }
-
         return $this;
     }
-
     /**
      * Writes the content of the local file to the remote path
      *
@@ -266,10 +240,8 @@ class Laravel implements Iface, DirIface, MetaIface
         if (($content = @file_get_contents($local)) === false) {
             throw new Exception(sprintf('Couldn\'t read file "%1$s"', $local));
         }
-
         return $this->write($path, $content);
     }
-
     /**
      * Write the content of the stream descriptor into the remote file
      *
@@ -286,15 +258,12 @@ class Laravel implements Iface, DirIface, MetaIface
             if (($content = @fread($stream, 0x7ffffffd)) === false) {
                 throw new \Exception(error_get_last()['message']);
             }
-
             $this->fs->put($path, $content);
         } catch (\Throwable $e) {
-            throw new Exception($e->getMessage(), 0, $e);
+            throw new Exception($e->get_message(), 0, $e);
         }
-
         return $this;
     }
-
     /**
      * Renames a file, moves it to a new location or both at once
      *
@@ -308,12 +277,10 @@ class Laravel implements Iface, DirIface, MetaIface
         try {
             $this->fs->move($from, $to);
         } catch (\Exception $e) {
-            throw new Exception($e->getMessage(), 0, $e);
+            throw new Exception($e->get_message(), 0, $e);
         }
-
         return $this;
     }
-
     /**
      * Copies a file to a new location
      *
@@ -327,9 +294,8 @@ class Laravel implements Iface, DirIface, MetaIface
         try {
             $this->fs->copy($from, $to);
         } catch (\Exception $e) {
-            throw new Exception($e->getMessage(), 0, $e);
+            throw new Exception($e->get_message(), 0, $e);
         }
-
         return $this;
     }
 }

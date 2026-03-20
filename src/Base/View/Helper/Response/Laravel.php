@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2015-2026
  * @package Base
  * @subpackage View
  */
-
 namespace Aimeos\Base\View\Helper\Response;
 
 /**
@@ -27,6 +25,6 @@ class Laravel extends \Aimeos\Base\View\Helper\Response\Standard implements \Aim
     public function __construct(\Aimeos\Base\View\Iface $view)
     {
         $psr17Factory = new \Nyholm\Psr7\Factory\Psr17Factory();
-        parent::__construct($view, $psr17Factory->createResponse());
+        parent::__construct($view, $psr17Factory->create_response());
     }
 }

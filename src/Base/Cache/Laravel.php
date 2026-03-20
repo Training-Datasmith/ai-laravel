@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2015-2026
  * @package Base
  * @subpackage Cache
  */
-
 namespace Aimeos\Base\Cache;
 
 /**
@@ -20,7 +18,6 @@ namespace Aimeos\Base\Cache;
 class Laravel extends \Aimeos\Base\Cache\Base implements \Aimeos\Base\Cache\Iface
 {
     private \Illuminate\Contracts\Cache\Store $object;
-
     /**
      * Initializes the object instance.
      *
@@ -30,7 +27,6 @@ class Laravel extends \Aimeos\Base\Cache\Base implements \Aimeos\Base\Cache\Ifac
     {
         $this->object = $cache;
     }
-
     /**
      * Removes all entries from the cache so it's completely empty.
      *
@@ -47,7 +43,6 @@ class Laravel extends \Aimeos\Base\Cache\Base implements \Aimeos\Base\Cache\Ifac
     {
         return $this->object->flush();
     }
-
     /**
      * Removes the cache entry identified by the given key.
      *
@@ -61,7 +56,6 @@ class Laravel extends \Aimeos\Base\Cache\Base implements \Aimeos\Base\Cache\Ifac
     {
         return $this->object->forget($key);
     }
-
     /**
      * Removes the cache entries identified by the given keys.
      *
@@ -71,15 +65,13 @@ class Laravel extends \Aimeos\Base\Cache\Base implements \Aimeos\Base\Cache\Ifac
      * @return bool True if the items were successfully removed. False if there was an error.
      * @throws \Psr\SimpleCache\InvalidArgumentException
      */
-    public function deleteMultiple(iterable $keys): bool
+    public function delete_multiple(iterable $keys): bool
     {
         foreach ($keys as $key) {
             $this->object->forget($key);
         }
-
         return true;
     }
-
     /**
      * Removes the cache entries identified by the given tags.
      *
@@ -89,11 +81,10 @@ class Laravel extends \Aimeos\Base\Cache\Base implements \Aimeos\Base\Cache\Ifac
      * @return bool True if the items were successfully removed. False if there was an error.
      * @throws \Psr\SimpleCache\InvalidArgumentException
      */
-    public function deleteByTags(iterable $tags): bool
+    public function delete_by_tags(iterable $tags): bool
     {
         return $this->object->flush();
     }
-
     /**
      * Returns the value of the requested cache key.
      *
@@ -110,10 +101,8 @@ class Laravel extends \Aimeos\Base\Cache\Base implements \Aimeos\Base\Cache\Ifac
         if (($entry = $this->object->get($key)) !== null) {
             return $entry;
         }
-
         return $default;
     }
-
     /**
      * Returns the cached values for the given cache keys.
      *
@@ -124,10 +113,9 @@ class Laravel extends \Aimeos\Base\Cache\Base implements \Aimeos\Base\Cache\Ifac
      * @return iterable A list of key => value pairs. Cache keys that do not exist or are stale will have $default as value.
      * @throws \Psr\SimpleCache\InvalidArgumentException
      */
-    public function getMultiple(iterable $keys, $default = null): iterable
+    public function get_multiple(iterable $keys, $default = null): iterable
     {
         $result = [];
-
         foreach ($keys as $key) {
             if (($entry = $this->object->get($key)) !== false) {
                 $result[$key] = $entry;
@@ -135,10 +123,8 @@ class Laravel extends \Aimeos\Base\Cache\Base implements \Aimeos\Base\Cache\Ifac
                 $result[$key] = $default;
             }
         }
-
         return $result;
     }
-
     /**
      * Determines whether an item is present in the cache.
      *
@@ -153,10 +139,8 @@ class Laravel extends \Aimeos\Base\Cache\Base implements \Aimeos\Base\Cache\Ifac
         if ($this->object->get($key) !== null) {
             return true;
         }
-
         return false;
     }
-
     /**
      * Sets the value for the specified key.
      *
@@ -177,14 +161,13 @@ class Laravel extends \Aimeos\Base\Cache\Base implements \Aimeos\Base\Cache\Ifac
             return $this->object->put($key, $value, (int) (date_create()->add($expires)->format('Y-m-d H:i:s') - time()));
         }
         if (is_string($expires)) {
-            return $this->object->put($key, $value, (int) (date_create($expires)->getTimestamp() - time()));
+            return $this->object->put($key, $value, (int) (date_create($expires)->get_timestamp() - time()));
         }
         if (is_int($expires)) {
             return $this->object->put($key, $value, $expires);
         }
         return $this->object->forever($key, $value);
     }
-
     /**
      * Adds the given key/value pairs to the cache.
      *
@@ -198,12 +181,11 @@ class Laravel extends \Aimeos\Base\Cache\Base implements \Aimeos\Base\Cache\Ifac
      * @return bool True on success and false on failure.
      * @throws \Psr\SimpleCache\InvalidArgumentException
      */
-    public function setMultiple(iterable $pairs, $expires = null, iterable $tags = []): bool
+    public function set_multiple(iterable $pairs, $expires = null, iterable $tags = []): bool
     {
         foreach ($pairs as $key => $value) {
             $this->set($key, $value, $expires, $tags);
         }
-
         return true;
     }
 }

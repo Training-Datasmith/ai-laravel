@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2015-2026
  * @package Base
  * @subpackage View
  */
-
 namespace Aimeos\Base\View\Helper\Url;
 
 /**
@@ -19,8 +17,7 @@ namespace Aimeos\Base\View\Helper\Url;
  */
 class Laravel extends \Aimeos\Base\View\Helper\Url\Base implements \Aimeos\Base\View\Helper\Url\Iface
 {
-    private \Illuminate\Contracts\Routing\UrlGenerator $builder;
-
+    private \Illuminate\Contracts\Routing\Url_Generator $builder;
     /**
      * Initializes the URL view helper.
      *
@@ -28,13 +25,11 @@ class Laravel extends \Aimeos\Base\View\Helper\Url\Base implements \Aimeos\Base\
      * @param \Illuminate\Contracts\Routing\UrlGenerator $builder Laravel URL builder object
      * @param array Associative list of fixed parameters that should be available for all routes
      */
-    public function __construct(\Aimeos\Base\View\Iface $view, \Illuminate\Contracts\Routing\UrlGenerator $builder, private array $fixed)
+    public function __construct(\Aimeos\Base\View\Iface $view, \Illuminate\Contracts\Routing\Url_Generator $builder, private array $fixed)
     {
         parent::__construct($view);
-
         $this->builder = $builder;
     }
-
     /**
      * Returns the URL assembled from the given arguments.
      *
@@ -46,37 +41,25 @@ class Laravel extends \Aimeos\Base\View\Helper\Url\Base implements \Aimeos\Base\
      * @param array $config Additional configuration parameter per URL
      * @return string Complete URL that can be used in the template
      */
-    public function transform(
-        ?string $target = null,
-        ?string $controller = null,
-        ?string $action = null,
-        array $params = [],
-        array $trailing = [],
-        array $config = []
-    ): string {
-        $values = $this->getValues($config);
+    public function transform(?string $target = null, ?string $controller = null, ?string $action = null, array $params = [], array $trailing = [], array $config = []): string
+    {
+        $values = $this->get_values($config);
         $params = $this->sanitize($params) + $this->fixed;
-        $fragment = (!empty($trailing) ? '#' . implode('/', $trailing) : '');
-
+        $fragment = !empty($trailing) ? '#' . implode('/', $trailing) : '';
         return $this->builder->route($target, $params, $values['absoluteUri']) . $fragment;
     }
-
     /**
      * Returns the sanitized configuration values.
      *
      * @param array $config Associative list of key/value pairs
      * @return array Associative list of sanitized key/value pairs
      */
-    protected function getValues(array $config): array
+    protected function get_values(array $config): array
     {
-        $values = [
-            'absoluteUri' => false,
-        ];
-
+        $values = ['absoluteUri' => false];
         if (isset($config['absoluteUri'])) {
             $values['absoluteUri'] = (bool) $config['absoluteUri'];
         }
-
         return $values;
     }
 }

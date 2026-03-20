@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2017-2026
  * @package Base
  * @subpackage View
  */
-
 namespace Aimeos\Base\View\Engine;
 
 /**
@@ -20,7 +18,6 @@ namespace Aimeos\Base\View\Engine;
 class Blade implements Iface
 {
     private \Illuminate\View\Factory $factory;
-
     /**
      * Initializes the view object
      *
@@ -30,7 +27,6 @@ class Blade implements Iface
     {
         $this->factory = $factory;
     }
-
     /**
      * Renders the output based on the given template file name and the key/value pairs
      *
@@ -44,16 +40,13 @@ class Blade implements Iface
     {
         $factory = $this->factory;
         $lv = $factory->file($filename, $values);
-
         $fcn = function () use ($factory, $view): void {
-            foreach ($factory->getSections() as $name => $section) {
+            foreach ($factory->get_sections() as $name => $section) {
                 $view->block()->set($name, $section);
             }
         };
-
         $contents = $lv->render($fcn);
-        $this->factory->flushSections();
-
+        $this->factory->flush_sections();
         return $contents;
     }
 }

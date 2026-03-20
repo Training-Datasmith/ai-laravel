@@ -1,14 +1,12 @@
 <?php
 
-declare(strict_types=1);
-
+declare (strict_types=1);
 /**
  * @license LGPLv3, http://opensource.org/licenses/LGPL-3.0
  * @copyright Aimeos (aimeos.org), 2015-2026
  * @package Base
  * @subpackage Filesystem
  */
-
 namespace Aimeos\Base\Filesystem\Manager;
 
 /**
@@ -19,9 +17,8 @@ namespace Aimeos\Base\Filesystem\Manager;
  */
 class Laravel extends Standard implements Iface
 {
-    private \Illuminate\Filesystem\FilesystemManager $fsm;
+    private \Illuminate\Filesystem\Filesystem_Manager $fsm;
     private array $objects = [];
-
     /**
      * Initializes the object
      *
@@ -29,13 +26,11 @@ class Laravel extends Standard implements Iface
      * @param array $config Filesystem resource configuration
      * @param string $tempdir Directory for storing temporary files
      */
-    public function __construct(\Illuminate\Filesystem\FilesystemManager $fsm, array $config, private string $tempdir)
+    public function __construct(\Illuminate\Filesystem\Filesystem_Manager $fsm, array $config, private string $tempdir)
     {
         parent::__construct($config);
-
         $this->fsm = $fsm;
     }
-
     /**
      * Cleans up the object
      */
@@ -45,7 +40,6 @@ class Laravel extends Standard implements Iface
             unset($this->objects[$key]);
         }
     }
-
     /**
      * Clean up the objects inside
      *
@@ -55,10 +49,8 @@ class Laravel extends Standard implements Iface
     {
         $this->__destruct();
         $this->objects = [];
-
         return array_keys(get_object_vars($this));
     }
-
     /**
      * Returns the file system for the given name
      *
@@ -69,15 +61,12 @@ class Laravel extends Standard implements Iface
     public function get(string $name): \Aimeos\Base\Filesystem\Iface
     {
         $key = $this->config($name);
-
         if (is_string($key)) {
             if (!isset($this->objects[$key])) {
                 $this->objects[$key] = new \Aimeos\Base\Filesystem\Laravel($this->fsm->disk($key), $this->tempdir);
             }
-
             return $this->objects[$key];
         }
-
         return parent::get($name);
     }
 }
